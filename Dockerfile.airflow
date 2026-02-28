@@ -1,0 +1,28 @@
+FROM apache/airflow:2.10.4-python3.12
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /data /app/logs \
+    && chown -R airflow:root /data /app/logs
+USER airflow
+
+COPY pyproject.toml /opt/airflow/
+RUN pip install --no-cache-dir \
+    'apache-airflow[fab]==2.10.4' \
+    httpx==0.28.1 \
+    beautifulsoup4==4.13.3 \
+    feedparser==6.0.11 \
+    twilio==9.4.6 \
+    structlog==25.1.0 \
+    ollama==0.4.7 \
+    pydantic-settings==2.8.1 \
+    python-dotenv==1.1.0 \
+    lxml==5.3.1 \
+    aiosmtplib==3.0.2
+
+COPY src/ /opt/airflow/src/
+COPY dags/ /opt/airflow/dags/
+
+ENV PYTHONPATH=/opt/airflow
